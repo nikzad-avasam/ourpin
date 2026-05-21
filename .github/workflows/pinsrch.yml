@@ -1,0 +1,42 @@
+name: 01- جستجو درپینترست
+
+on:
+  workflow_dispatch:
+    inputs:
+      query:
+        description: 'Search query'
+        required: true
+        type: string
+      num_results:
+        description: 'Number of results'
+        required: false
+        default: '10'
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  search:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pinterest-dl aiohttp
+
+      - name: Run search
+        run: python scripts/search.py "${{ inputs.query }}" "${{ inputs.num_results }}"
+
+      - name: Commit results
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add search/
+          git commit -m "Search: ${{ inputs.query }}" || exit 0
+          git push
