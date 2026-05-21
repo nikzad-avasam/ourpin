@@ -1,0 +1,37 @@
+name: 02- دانلود از پینترست
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: 'Pinterest URL'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  download:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install aiohttp
+
+      - name: Run download
+        run: python scripts/download.py "${{ inputs.url }}"
+
+      - name: Commit results
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add downloads/
+          git commit -m "Download from Pinterest" || exit 0
+          git push
